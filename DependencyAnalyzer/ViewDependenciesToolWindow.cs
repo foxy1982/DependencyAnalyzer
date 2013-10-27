@@ -7,6 +7,7 @@ using System.Windows;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
+using EnvDTE;
 
 namespace KitsuneSoft.DependencyAnalyzer
 {
@@ -20,12 +21,12 @@ namespace KitsuneSoft.DependencyAnalyzer
     /// implementation of the IVsUIElementPane interface.
     /// </summary>
     [Guid("ed24c3ba-1e06-492c-9c83-40632d21eaf7")]
-    public class MyToolWindow : ToolWindowPane
+    public class ViewDependenciesToolWindow : ToolWindowPane
     {
         /// <summary>
         /// Standard constructor for the tool window.
         /// </summary>
-        public MyToolWindow() :
+        public ViewDependenciesToolWindow() :
             base(null)
         {
             // Set the window title reading it from the resources.
@@ -38,10 +39,17 @@ namespace KitsuneSoft.DependencyAnalyzer
             this.BitmapResourceID = 301;
             this.BitmapIndex = 1;
 
+            var dte = (DTE)Microsoft.VisualStudio.Shell.ServiceProvider.GlobalProvider.GetService(typeof(SDTE));
+
+            if (!dte.Solution.IsOpen)
+            {
+                MessageBox.Show("A solution must be opened before the dependencies can be analysed");
+            }
+
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
-            base.Content = new MyControl();
+            base.Content = new ViewDependenciesControl() { DataContext = new DependencyViewModel(dte.Solution) };
         }
     }
 }
