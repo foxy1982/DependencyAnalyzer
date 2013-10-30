@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using EnvDTE;
+using System.Windows.Controls;
 
 namespace KitsuneSoft.DependencyAnalyzer
 {
@@ -29,27 +30,38 @@ namespace KitsuneSoft.DependencyAnalyzer
         public ViewDependenciesToolWindow() :
             base(null)
         {
-            // Set the window title reading it from the resources.
-            this.Caption = Resources.ToolWindowTitle;
-            // Set the image that will appear on the tab of the window frame
-            // when docked with an other window
-            // The resource ID correspond to the one defined in the resx file
-            // while the Index is the offset in the bitmap strip. Each image in
-            // the strip being 16x16.
-            this.BitmapResourceID = 301;
-            this.BitmapIndex = 1;
-
-            var dte = (DTE)Microsoft.VisualStudio.Shell.ServiceProvider.GlobalProvider.GetService(typeof(SDTE));
-
-            if (!dte.Solution.IsOpen)
+            try
             {
-                MessageBox.Show("A solution must be opened before the dependencies can be analysed");
-            }
+                // Set the window title reading it from the resources.
+                this.Caption = Resources.ToolWindowTitle;
+                // Set the image that will appear on the tab of the window frame
+                // when docked with an other window
+                // The resource ID correspond to the one defined in the resx file
+                // while the Index is the offset in the bitmap strip. Each image in
+                // the strip being 16x16.
+                this.BitmapResourceID = 301;
+                this.BitmapIndex = 1;
 
+                base.Content = new ViewDependenciesControl();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("The view dependencies window is currently unavailable");
+            }
+        }
+
+        public void Refresh()
+        {
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
-            base.Content = new ViewDependenciesControl() { DataContext = new DependencyViewModel(dte.Solution) };
+
+            var control = base.Content as ViewDependenciesControl;
+
+            if (control != null)
+            {
+                control.DataContext = new DependencyViewModel();
+            }
         }
     }
 }

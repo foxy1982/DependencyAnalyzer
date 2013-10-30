@@ -32,6 +32,7 @@ namespace KitsuneSoft.DependencyAnalyzer
     // This attribute registers a tool window exposed by this package.
     [ProvideToolWindow(typeof(ViewDependenciesToolWindow))]
     [Guid(GuidList.guidDependencyAnalyzerPkgString)]
+    [ProvideBindingPath]
     public sealed class DependencyAnalyzerPackage : Package
     {
         /// <summary>
@@ -57,6 +58,14 @@ namespace KitsuneSoft.DependencyAnalyzer
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
             ToolWindowPane window = this.FindToolWindow(typeof(ViewDependenciesToolWindow), 0, true);
+
+            var dependenciesWindow = window as ViewDependenciesToolWindow;
+
+            if (dependenciesWindow != null)
+            {
+                dependenciesWindow.Refresh();
+            }
+
             if ((null == window) || (null == window.Frame))
             {
                 throw new NotSupportedException(Resources.CanNotCreateWindow);

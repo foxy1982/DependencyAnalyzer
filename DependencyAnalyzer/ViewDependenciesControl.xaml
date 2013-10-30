@@ -11,9 +11,19 @@
              d:DesignHeight="300" d:DesignWidth="300"
              Name="ViewDependencies">
 
-
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <zoom:ZoomControl
             Grid.Row="0"
+            Grid.Column="0"
             Grid.ColumnSpan="2"
             Zoom="0.2"
             ZoomBoxOpacity="0.1"
@@ -21,8 +31,13 @@
             <local:DependencyGraphLayout
                 Margin="10"
                 Graph="{Binding Graph}"
-                LayoutAlgorithmType="BoundedFR"
+                LayoutAlgorithmType="{Binding LayoutAlgorithmType}"
                 OverlapRemovalAlgorithmType="FSA"
                 HighlightAlgorithmType="Simple" />
         </zoom:ZoomControl>
+        <TextBlock Text="Layout:" Grid.Row="1" Grid.Column="0" Margin="3"/>
+        <ComboBox ItemsSource="{Binding LayoutAlgorithmTypes}" SelectedItem="{Binding LayoutAlgorithmType}" Grid.Row="1" Grid.Column="1"/>
+        <Button Command="{Binding RefreshCommand}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Refresh"/>
+    </Grid>
+
 </UserControl>

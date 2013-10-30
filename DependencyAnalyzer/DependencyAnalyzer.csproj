@@ -145,11 +145,13 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DelegateCommand.cs" />
     <Compile Include="Dependency\DependencyEdge.cs" />
     <Compile Include="Dependency\DependencyGraph.cs" />
     <Compile Include="Dependency\DependencyGraphLayout.cs" />
     <Compile Include="Dependency\DependencyVertex.cs" />
     <Compile Include="Dependency\DependencyViewModel.cs" />
+    <Compile Include="ProvideBindingPathAttribute.cs" />
     <Compile Include="ViewDependenciesControl.xaml.cs">
       <DependentUpon>ViewDependenciesControl.xaml</DependentUpon>
     </Compile>

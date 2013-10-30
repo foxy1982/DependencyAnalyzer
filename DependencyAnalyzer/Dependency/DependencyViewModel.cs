@@ -1,4 +1,5 @@
 ﻿using EnvDTE;
+using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +7,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 using VSLangProj;
 
 namespace KitsuneSoft.DependencyAnalyzer
@@ -16,11 +19,25 @@ namespace KitsuneSoft.DependencyAnalyzer
         private DependencyGraph _graph;
         private string _layoutAlgorithmType;
 
-        public DependencyViewModel(Solution solution)
+        public DependencyViewModel()
         {
+            RefreshCommand = new DelegateCommand(x => Refresh());
+
             InitializeLayoutAlgorithms();
 
-            CreateDiagram(solution);
+            Refresh();
+        }
+
+        private void Refresh()
+        {
+            var dte = (DTE)Microsoft.VisualStudio.Shell.ServiceProvider.GlobalProvider.GetService(typeof(SDTE));
+
+            if (!dte.Solution.IsOpen)
+            {
+                MessageBox.Show("No solution open");
+            }
+
+            CreateDiagram(dte.Solution);
         }
 
         public List<String> LayoutAlgorithmTypes
@@ -46,6 +63,12 @@ namespace KitsuneSoft.DependencyAnalyzer
                 _graph = value;
                 NotifyPropertyChanged("Graph");
             }
+        }
+
+        public ICommand RefreshCommand
+        {
+            get;
+            private set;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -77,35 +100,59 @@ namespace KitsuneSoft.DependencyAnalyzer
             var vertices = new List<DependencyVertex>();
             var graph = new DependencyGraph(true);
 
-            foreach (Project project in solution.Projects)
-            {
-                VSProject vsProj = project.Object as VSProject;
+            var validProjects = GetValidProjects(solution);
 
-                if (vsProj != null)
-                {
-                    graph.AddVertex(new DependencyVertex(project.Name));
-                }
+            foreach (var project in validProjects)
+            {
+                graph.AddVertex(new DependencyVertex(project.Project.Name));
             }
 
-            foreach (Project project in solution.Projects)
+            foreach (var project in validProjects)
             {
-                VSProject vsProj = project.Object as VSProject;
 
-                if (vsProj != null)
-                {
-                    foreach (Reference reference in vsProj.References)
+                    foreach (Reference reference in project.References)
                     {
                         if (graph.Vertices.Any(x => x.ID == reference.Name))
                         {
-                            var vertex1 = graph.Vertices.Single(x => x.ID == project.Name);
+                            var vertex1 = graph.Vertices.Single(x => x.ID == project.Project.Name);
                             var vertex2 = graph.Vertices.Single(x => x.ID == reference.Name);
                             graph.AddEdge(new DependencyEdge("", vertex1, vertex2));
                         }
                     }
-                }
             }
 
             Graph = graph;
+        }
+
+        private static List<VSProject> GetValidProjects(Solution solution)
+        {
+            var validProjects = new List<VSProject>();
+
+            foreach (Project project in solution.Projects)
+            {
+                validProjects = GetValidProjects(project, validProjects);
+            }
+            return validProjects;
+        }
+
+        private static List<VSProject> GetValidProjects(Project project, List<VSProject> validProjects)
+        {
+            VSProject vsProj = project.Object as VSProject;
+
+            if (vsProj != null)
+            {
+                validProjects.Add(vsProj);
+            }
+
+            foreach (ProjectItem innerProject in project.ProjectItems)
+            {
+                if (innerProject.SubProject != null)
+                {
+                    validProjects = GetValidProjects(innerProject.SubProject, validProjects);
+                }
+            }
+
+            return validProjects;
         }
 
         private void NotifyPropertyChanged(String info)

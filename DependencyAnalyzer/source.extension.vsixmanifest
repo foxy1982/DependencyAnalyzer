@@ -5,7 +5,7 @@
     <DisplayName>DependencyAnalyzer</DisplayName>
     <Description>Analyzes dependencies between projects in a solution</Description>
   </Metadata>
-  <Installation InstalledByMsi="false">
+  <Installation InstalledByMsi="false" AllUsers="true">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="11.0" />
   </Installation>
   <Dependencies>
